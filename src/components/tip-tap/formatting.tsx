@@ -4,9 +4,7 @@ import { Toggle } from "@/components/ui/toggle";
 import type { Editor } from "@tiptap/react";
 import { Bold, Code, FileCode, Italic, Quote, Underline } from "lucide-react";
 
-export function FormattingButtons({ editor }: { editor: Editor | null }) {
-  if (!editor) return null;
-
+export function FormattingButtons({ editor }: { editor: Editor }) {
   return (
     <>
       <Toggle

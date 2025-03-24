@@ -32,8 +32,7 @@ const fontSizeOptions = [
   "64px",
 ];
 
-export function FontSizeDropdown({ editor }: { editor: Editor | null }) {
-  if (!editor) return null;
+export function FontSizeDropdown({ editor }: { editor: Editor }) {
   const [customFontSize, setCustomFontSize] = useState("");
 
   const currentTextStyle = editor.getAttributes("textStyle") || {};

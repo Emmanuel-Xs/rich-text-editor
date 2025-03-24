@@ -26,18 +26,18 @@ interface CustomPopoverContentProps {
 const CustomPopoverContext = React.createContext<{
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  triggerRef: React.RefObject<HTMLElement | null>; // ✅ Allow null
+  triggerRef: React.RefObject<HTMLDivElement | null>; // ✅ Allow null
   contentRef: React.RefObject<HTMLDivElement | null>; // ✅ Allow null
 }>({
   open: false,
   setOpen: () => {},
-  triggerRef: React.createRef<HTMLElement>(),
+  triggerRef: React.createRef<HTMLDivElement>(),
   contentRef: React.createRef<HTMLDivElement>(),
 });
 
 export function CustomPopover({ children, className }: CustomPopoverProps) {
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef<HTMLElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Close popover when clicking outside
@@ -79,7 +79,7 @@ export function CustomPopoverTrigger({
 
   return (
     <div
-      ref={triggerRef as any}
+      ref={triggerRef}
       onClick={() => {
         if (!disabled) {
           setOpen((prev) => !prev);

@@ -27,9 +27,7 @@ import {
 } from "lucide-react";
 import { useCallback } from "react";
 
-export function HeadingDropdown({ editor }: { editor: Editor | null }) {
-  if (!editor) return null;
-
+export function HeadingDropdown({ editor }: { editor: Editor }) {
   const currentHeading = useCallback(() => {
     if (editor.isActive("heading", { level: 1 })) return <Heading1 size={16} />;
     if (editor.isActive("heading", { level: 2 })) return <Heading2 size={16} />;

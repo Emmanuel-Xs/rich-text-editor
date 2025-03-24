@@ -12,9 +12,7 @@ import type { Editor } from "@tiptap/react";
 import { Link } from "lucide-react";
 import { useState } from "react";
 
-export function LinkButton({ editor }: { editor: Editor | null }) {
-  if (!editor) return null;
-
+export function LinkButton({ editor }: { editor: Editor }) {
   const [linkUrl, setLinkUrl] = useState<string>("");
   const [openNewTab, setOpenNewTab] = useState<boolean>(false);
 

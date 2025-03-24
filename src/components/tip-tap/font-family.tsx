@@ -25,9 +25,7 @@ const fontOptions = [
   "Courier New",
 ];
 
-export function FontFamilyDropdown({ editor }: { editor: Editor | null }) {
-  if (!editor) return null;
-
+export function FontFamilyDropdown({ editor }: { editor: Editor }) {
   const currentTextStyle = editor.getAttributes("textStyle") || {};
   const activeFontFamily = currentTextStyle.fontFamily || "Inter";
 

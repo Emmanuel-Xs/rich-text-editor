@@ -26,9 +26,7 @@ const colorOptions: ColorOption[] = [
   { value: "#9D4EDD", label: "Purple" },
 ];
 
-export function HighlighterButton({ editor }: { editor: Editor | null }) {
-  if (!editor) return null;
-
+export function HighlighterButton({ editor }: { editor: Editor }) {
   const [highlightColor, setHighlightColor] = useState("#FFFF00");
 
   const handleHighlightChange = (newHighlight: string) => {
@@ -75,7 +73,7 @@ export function HighlighterButton({ editor }: { editor: Editor | null }) {
                 className="w-8 h-8 rounded-md cursor-pointer"
                 style={{ backgroundColor: colorOption.value }}
                 title={colorOption.label}
-                onClick={(e) => {
+                onClick={() => {
                   editor
                     .chain()
                     .focus()
@@ -88,7 +86,7 @@ export function HighlighterButton({ editor }: { editor: Editor | null }) {
             <button
               className="w-7 h-7 mt-2 rounded-md cursor-pointer border border-gray-300 flex items-center justify-center"
               title="Remove highlight"
-              onClick={(e) => {
+              onClick={() => {
                 editor.chain().focus().unsetHighlight().run();
               }}
               disabled={!editor.isActive("highlight")}

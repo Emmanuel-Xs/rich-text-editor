@@ -2,9 +2,7 @@ import type { Editor } from "@tiptap/react";
 import { RedoIcon, UndoIcon } from "lucide-react";
 import { Toggle } from "../ui/toggle";
 
-export default function UndoRedo({ editor }: { editor: Editor | null }) {
-  if (!editor) return null;
-
+export default function UndoRedo({ editor }: { editor: Editor }) {
   return (
     <>
       <Toggle

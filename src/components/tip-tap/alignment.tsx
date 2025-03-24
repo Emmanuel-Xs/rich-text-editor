@@ -17,9 +17,7 @@ import {
 } from "lucide-react";
 import { useCallback } from "react";
 
-export function Alignment({ editor }: { editor: Editor | null }) {
-  if (!editor) return null;
-
+export function Alignment({ editor }: { editor: Editor }) {
   const currentAlign = useCallback(() => {
     if (editor.isActive({ textAlign: "center" }))
       return <AlignCenter size={16} />;

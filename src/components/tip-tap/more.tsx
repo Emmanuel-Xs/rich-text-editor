@@ -14,9 +14,7 @@ import {
 } from "../ui/dropdown-menu";
 import { Toggle } from "../ui/toggle";
 
-export default function More({ editor }: { editor: Editor | null }) {
-  if (!editor) return null;
-
+export default function More({ editor }: { editor: Editor }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

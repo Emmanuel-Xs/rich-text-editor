@@ -1,0 +1,212 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { usePopper } from "react-popper";
+
+interface CustomPopoverProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface CustomPopoverTriggerProps {
+  children: (() => React.ReactNode) | React.ReactNode;
+  className?: string;
+}
+
+interface CustomPopoverContentProps {
+  children: React.ReactNode;
+  className?: string;
+  sideOffset?: number;
+  align?: "start" | "center" | "end";
+}
+
+const CustomPopoverContext = React.createContext<{
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  triggerRef: React.RefObject<HTMLElement | null>; // ✅ Allow null
+  contentRef: React.RefObject<HTMLDivElement | null>; // ✅ Allow null
+}>({
+  open: false,
+  setOpen: () => {},
+  triggerRef: React.createRef<HTMLElement>(),
+  contentRef: React.createRef<HTMLDivElement>(),
+});
+
+export function CustomPopover({ children, className }: CustomPopoverProps) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Close popover when clicking outside
+  useEffect(() => {
+    if (!open) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        contentRef.current &&
+        !contentRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
+
+  return (
+    <CustomPopoverContext.Provider
+      value={{ open, setOpen, triggerRef, contentRef }}
+    >
+      <div className={cn("relative inline-block", className)}>{children}</div>
+    </CustomPopoverContext.Provider>
+  );
+}
+
+export function CustomPopoverTrigger({
+  children,
+  className,
+}: CustomPopoverTriggerProps) {
+  const { setOpen, triggerRef } = React.useContext(CustomPopoverContext);
+
+  return (
+    <div
+      ref={triggerRef as any}
+      onClick={() => setOpen((prev) => !prev)}
+      className={className}
+    >
+      {typeof children === "function"
+        ? (children as () => React.ReactNode)()
+        : children}
+    </div>
+  );
+}
+
+export function CustomPopoverContent({
+  children,
+  className,
+  sideOffset = 5,
+  align = "center",
+}: CustomPopoverContentProps) {
+  const { open, triggerRef, contentRef } =
+    React.useContext(CustomPopoverContext);
+  const [mounted, setMounted] = useState(false);
+  const [animationState, setAnimationState] = useState<"open" | "closed">(
+    "closed"
+  );
+
+  // Set up popper for positioning
+  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
+    null
+  );
+
+  const placement =
+    align === "start"
+      ? "bottom-start"
+      : align === "end"
+      ? "bottom-end"
+      : "bottom";
+
+  const { styles, attributes, state } = usePopper(
+    triggerRef.current,
+    popperElement,
+    {
+      placement,
+      modifiers: [
+        {
+          name: "offset",
+          options: {
+            offset: [0, sideOffset],
+          },
+        },
+      ],
+    }
+  );
+
+  // Compute transform-origin based on popper placement
+  const getTransformOrigin = () => {
+    if (!state) return "center top"; // Default
+    switch (state.placement) {
+      case "top":
+        return "center bottom";
+      case "bottom":
+        return "center top";
+      case "left":
+        return "right center";
+      case "right":
+        return "left center";
+      case "top-start":
+      case "bottom-start":
+        return "left top";
+      case "top-end":
+      case "bottom-end":
+        return "right top";
+      default:
+        return "center top";
+    }
+  };
+
+  // Handle mounting for SSR
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !open) return null;
+
+  // Use createPortal to render at the document body level
+  return createPortal(
+    <div
+      ref={(el) => {
+        setPopperElement(el);
+        if (contentRef) {
+          contentRef.current = el;
+        }
+      }}
+      style={{
+        ...styles.popper,
+        transformOrigin: getTransformOrigin(),
+      }}
+      {...attributes.popper}
+      className={cn(
+        "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-72 rounded-md border p-4 shadow-md outline-hidden",
+        "data-[popper-placement=bottom]:slide-in-from-top-2",
+        "data-[popper-placement=left]:slide-in-from-right-2",
+        "data-[popper-placement=right]:slide-in-from-left-2",
+        "data-[popper-placement=top]:slide-in-from-bottom-2",
+        className
+      )}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {children}
+    </div>,
+    document.body
+  );
+}
+
+export function CustomPopoverClose({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const { setOpen } = React.useContext(CustomPopoverContext);
+
+  return (
+    <div
+      className={cn("cursor-pointer", className)}
+      onClick={(e) => {
+        e.stopPropagation();
+        setOpen(false);
+      }}
+    >
+      {children}
+    </div>
+  );
+}

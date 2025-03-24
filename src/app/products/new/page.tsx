@@ -1,6 +1,6 @@
 import TiptapEditor from "@/components/tip-tap/editor";
 
-export default function Home() {
+export default function NewProductPage() {
   return (
     <main className="w-[min(calc(100%-2rem),_800px)] mx-auto mt-12">
       <section className="border border-gray-400 bg-accent rounded-lg p-6 space-y-10">

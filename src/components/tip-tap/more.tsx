@@ -1,0 +1,67 @@
+import type { Editor } from "@tiptap/react";
+import {
+  MoreVertical,
+  Strikethrough,
+  SubscriptIcon,
+  SuperscriptIcon,
+} from "lucide-react";
+import { Button } from "../ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Toggle } from "../ui/toggle";
+
+export default function More({ editor }: { editor: Editor | null }) {
+  if (!editor) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2">
+          <MoreVertical size={14} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="min-w-fit">
+        <DropdownMenuGroup>
+          <Toggle
+            pressed={editor.isActive("strike")}
+            onPressedChange={() => editor.chain().focus().toggleStrike().run()}
+            disabled={!editor.can().toggleStrike()}
+            size="sm"
+            className="h-8 w-8 p-0"
+            title="Strikethrough"
+          >
+            <Strikethrough size={16} />
+          </Toggle>
+          <Toggle
+            pressed={editor.isActive("superscript")}
+            onPressedChange={() =>
+              editor.chain().focus().toggleSuperscript().run()
+            }
+            disabled={!editor.can().toggleSuperscript()}
+            size="sm"
+            className="h-8 w-8 p-0"
+            title="Superscript"
+          >
+            <SuperscriptIcon size={16} />
+          </Toggle>
+          <Toggle
+            pressed={editor.isActive("subscript")}
+            onPressedChange={() =>
+              editor.chain().focus().toggleSubscript().run()
+            }
+            disabled={!editor.can().toggleSubscript()}
+            size="sm"
+            className="h-8 w-8 p-0"
+            title="Subscript"
+          >
+            <SubscriptIcon size={16} />
+          </Toggle>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

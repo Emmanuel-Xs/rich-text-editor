@@ -169,7 +169,6 @@
     }
   }
 }
-
-/* .react-colorful {
-  width: auto;
-} */
+button {
+  cursor: pointer;
+}

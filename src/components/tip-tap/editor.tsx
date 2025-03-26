@@ -1,19 +1,36 @@
 "use client";
 
 import { useTipTapEditor } from "@/hooks/use-tiptap-editor";
-import { EditorContent } from "@tiptap/react";
+import { Editor, EditorContent } from "@tiptap/react";
+import { useLayoutEffect } from "react";
+import { ScrollArea } from "../ui/scroll-area";
 import TipTapToolBar from "./toolbar";
 
-const TiptapEditor = () => {
+interface TiptapEditorProps {
+  onEditorReady?: (editor: Editor) => void;
+}
+
+const TiptapEditor = ({ onEditorReady }: TiptapEditorProps) => {
   const editor = useTipTapEditor();
 
-  if (!editor) return null;
+  useLayoutEffect(() => {
+    if (editor && onEditorReady) {
+      onEditorReady(editor);
+    }
+  }, [editor, onEditorReady]);
+
+  if (!editor) {
+    return <div>Loading editor...</div>;
+  }
 
   return (
-    <>
-      <TipTapToolBar editor={editor} />
-      <EditorContent editor={editor} />
-    </>
+    <div className="">
+      <TipTapToolBar editor={editor} className="-mx-6" />
+
+      <ScrollArea className="h-[700px] w-full py-4">
+        <EditorContent editor={editor} className="max-w-none" />
+      </ScrollArea>
+    </div>
   );
 };
 

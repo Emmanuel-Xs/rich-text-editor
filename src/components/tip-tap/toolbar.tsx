@@ -1,4 +1,5 @@
 "use client";
+import { cn } from "@/lib/utils";
 import { Editor } from "@tiptap/react";
 import { Alignment } from "./alignment";
 import { ColorPickerButton } from "./color-picker";
@@ -11,50 +12,33 @@ import { ImageButton } from "./image-button";
 import { LinkButton } from "./link";
 import More from "./more";
 import UndoRedo from "./undo-redo";
+import { VideoButton } from "./video-button";
 
-export default function TipTapToolBar({ editor }: { editor: Editor }) {
+export default function TipTapToolBar({
+  editor,
+  className,
+}: {
+  editor: Editor;
+  className?: string;
+}) {
   return (
-    <div className="flex items-center px-4 py-2 bg-background border-b border-gray-200 gap-1 flex-wrap overflow-x-auto -mx-6">
-      {/* ------------------------------
-          1) Font family dropdown
-      ------------------------------ */}
+    <div
+      className={cn(
+        "flex items-center px-4 py-2 bg-background border-b border-gray-200 gap-1 flex-wrap justify-center",
+        className
+      )}
+    >
       <FontFamilyDropdown editor={editor} />
-      {/* ------------------------------
-          2) Font size dropdown
-      ------------------------------ */}
       <FontSizeDropdown editor={editor} />
-      {/* ------------------------------
-          3) Heading / Paragraph
-      ------------------------------ */}
       <HeadingDropdown editor={editor} />
-      {/* ------------------------------
-          4) Text alignment
-      ------------------------------ */}
       <Alignment editor={editor} />
-      {/* ------------------------------
-          5) Basic formatting toggles
-      ------------------------------ */}
       <FormattingButtons editor={editor} />
-      {/* ------------------------------
-          6) Document & Link
-      ------------------------------ */}
       <LinkButton editor={editor} />
-      {/* ------------------------------
-          7) Color picker (placeholder)
-      ------------------------------ */}
       <ColorPickerButton editor={editor} />
-      {/* -----------------------------
-          7) Highlighter (placeholder)
-      ------------------------------ */}
       <HighlighterButton editor={editor} />
-      {/* ------------------------------
-          8) Undo / redo
-      ------------------------------ */}
       <ImageButton editor={editor} />
+      <VideoButton editor={editor} />
       <UndoRedo editor={editor} />
-      {/* ------------------------------
-          9) More
-      ------------------------------ */}
       <More editor={editor} />
     </div>
   );

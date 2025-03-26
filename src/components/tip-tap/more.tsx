@@ -1,6 +1,9 @@
 import type { Editor } from "@tiptap/react";
 import {
+  Code,
+  FileCode,
   MoreVertical,
+  Quote,
   Strikethrough,
   SubscriptIcon,
   SuperscriptIcon,
@@ -24,6 +27,40 @@ export default function More({ editor }: { editor: Editor }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-fit">
         <DropdownMenuGroup>
+          <Toggle
+            pressed={editor.isActive("code")}
+            onPressedChange={() => editor.chain().focus().toggleCode().run()}
+            disabled={!editor.can().toggleCode()}
+            size="sm"
+            className="h-8 w-8 p-0"
+            title="Code"
+          >
+            <Code size={16} />
+          </Toggle>
+          <Toggle
+            pressed={editor.isActive("codeBlock")}
+            onPressedChange={() =>
+              editor.chain().focus().toggleCodeBlock().run()
+            }
+            disabled={!editor.can().toggleCodeBlock()}
+            size="sm"
+            className="h-8 w-8 p-0"
+            title="Code"
+          >
+            <FileCode size={16} />
+          </Toggle>
+          <Toggle
+            pressed={editor.isActive("blockquote")}
+            onPressedChange={() =>
+              editor.chain().focus().toggleBlockquote().run()
+            }
+            disabled={!editor.can().toggleBlockquote()}
+            size="sm"
+            className="h-8 w-8 p-0"
+            title="Blockquote"
+          >
+            <Quote size={16} />
+          </Toggle>
           <Toggle
             pressed={editor.isActive("strike")}
             onPressedChange={() => editor.chain().focus().toggleStrike().run()}

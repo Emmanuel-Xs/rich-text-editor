@@ -1,3 +1,5 @@
+import CustomImage from "@/components/tip-tap/extensions/image";
+import Video from "@/components/tip-tap/extensions/video";
 import { cn } from "@/lib/utils";
 import BulletList from "@tiptap/extension-bullet-list";
 import Color from "@tiptap/extension-color";
@@ -5,7 +7,6 @@ import Document from "@tiptap/extension-document";
 import FontFamily from "@tiptap/extension-font-family";
 import FontSize from "@tiptap/extension-font-size";
 import Highlight from "@tiptap/extension-highlight";
-import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import ListItem from "@tiptap/extension-list-item";
 import OrderedList from "@tiptap/extension-ordered-list";
@@ -51,14 +52,14 @@ export const useTipTapEditor = () => {
       }),
       Superscript,
       Subscript,
-      Image.configure({
-        allowBase64: true,
-      }),
+      // Use our custom image extension instead of the default one
+      CustomImage,
+      Video,
     ],
     editorProps: {
       attributes: {
         class: cn(
-          "border-0 outline-none focus-visible:outline-none focus-visible:ring-0 focus:border-0 prose prose-sm sm:prose lg:prose-lg xl:prose-2xl prose-slate w-full min-w-full"
+          "border-0 outline-none focus-visible:outline-none focus-visible:ring-0 focus:border-0 prose w-full min-w-full"
         ),
       },
     },

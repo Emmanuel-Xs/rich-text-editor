@@ -172,3 +172,7 @@
 button {
   cursor: pointer;
 }
+
+.action-button {
+  @apply ring-0 focus:ring-0 outline-none shadow-none;
+}

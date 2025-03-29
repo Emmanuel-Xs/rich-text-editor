@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 
 const ImageComponent = ({ node }: NodeViewProps) => {
@@ -9,8 +11,6 @@ const ImageComponent = ({ node }: NodeViewProps) => {
         className="image-wrapper"
         data-is-local={isLocalFile ? "true" : "false"}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-
         <img
           src={src}
           alt={alt || title || "Image"}

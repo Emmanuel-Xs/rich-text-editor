@@ -4,7 +4,7 @@ import {
   isVimeoUrl,
   isYouTubeUrl,
 } from "@/lib/video-utils";
-import { mergeAttributes, Node } from "@tiptap/core";
+import { Node } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import VideoComponent from "../video-component";
 
@@ -92,44 +92,83 @@ export const Video = Node.create<VideoOptions>({
       {
         tag: "video",
       },
+      // Add this to make YouTube divs parseable again
+      {
+        tag: "div[data-type=youtube-video]",
+        getAttrs: (node) => {
+          if (typeof node === "string") return null;
+          const element = node as HTMLElement;
+          return {
+            src: element.getAttribute("data-src"),
+          };
+        },
+      },
     ];
   },
 
   renderHTML({ HTMLAttributes }) {
     const { src } = HTMLAttributes;
 
-    if (!src) return ["video"];
+    if (!src) {
+      return ["video"];
+    }
 
+    // Handle YouTube videos
     if (isYouTubeUrl(src)) {
       return [
-        "iframe",
+        "div",
         {
-          src: getYouTubeEmbedUrl(src),
-          width: "560",
-          height: "315",
-          frameborder: "0",
-          allowfullscreen: "true",
+          "data-type": "youtube-video",
+          "data-src": src,
+          class: "youtube-video-container",
         },
+        [
+          "iframe",
+          {
+            src: getYouTubeEmbedUrl(src),
+            width: "560",
+            height: "315",
+            frameborder: "0",
+            allowfullscreen: "true",
+          },
+        ],
       ];
     }
 
+    // Handle Vimeo videos
     if (isVimeoUrl(src)) {
       return [
-        "iframe",
+        "div",
         {
-          src: getVimeoEmbedUrl(src),
-          width: "560",
-          height: "315",
-          frameborder: "0",
-          allowfullscreen: "true",
+          "data-type": "vimeo-video",
+          "data-src": src,
+          class: "vimeo-video-container",
         },
+        [
+          "iframe",
+          {
+            src: getVimeoEmbedUrl(src),
+            width: "560",
+            height: "315",
+            frameborder: "0",
+            allowfullscreen: "true",
+          },
+        ],
       ];
     }
 
+    // Ensure a valid return for non-YouTube and non-Vimeo videos
     return [
       "video",
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
-      ["source", { src }],
+      {
+        src,
+        controls: HTMLAttributes.controls ? "true" : null,
+        autoplay: HTMLAttributes.autoplay ? "true" : null,
+        loop: HTMLAttributes.loop ? "true" : null,
+        muted: HTMLAttributes.muted ? "true" : null,
+        width: HTMLAttributes.width,
+        height: HTMLAttributes.height,
+      },
     ];
   },
 

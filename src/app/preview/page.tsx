@@ -105,51 +105,7 @@ export default function PreviewPage() {
           dangerouslySetInnerHTML={{ __html: content.content }}
         />
 
-        {content.uploadedFiles && content.uploadedFiles.length > 0 && (
-          <div className="mt-6">
-            <h2 className="text-xl font-semibold mb-2">Uploaded Files</h2>
-            <ul className="list-disc pl-5">
-              {content.uploadedFiles.map((file, index) => {
-                if (file.type === "youtube" || file.type === "vimeo") {
-                  return (
-                    <li key={index} className="mt-4">
-                      <iframe
-                        width="560"
-                        height="315"
-                        src={file.url}
-                        title={
-                          file.type === "youtube"
-                            ? "YouTube video"
-                            : "Vimeo video"
-                        }
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      ></iframe>
-                    </li>
-                  );
-                }
-
-                // Ensure `file` has a `name` property before using it
-                if ("name" in file) {
-                  return (
-                    <li key={index}>
-                      <a
-                        href={file.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        {file.name}
-                      </a>
-                    </li>
-                  );
-                }
-
-                return null; // If it doesn't match any condition, return null
-              })}
-            </ul>
-          </div>
-        )}
+        {/* We no longer need to display YouTube videos here as they're now preserved in the content */}
       </section>
     </main>
   );

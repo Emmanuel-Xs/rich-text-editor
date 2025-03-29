@@ -20,7 +20,10 @@ export default function Home() {
   const router = useRouter();
 
   // Load saved data from localStorage when the component mounts
+  // In Home.tsx
   useEffect(() => {
+    if (!editorInstance) return;
+
     const storedContent = localStorage.getItem("previewContent");
     if (storedContent) {
       try {
@@ -28,11 +31,11 @@ export default function Home() {
         setTitle(parsedContent.title);
         setExcerpt(parsedContent.excerpt);
 
-        if (editorInstance) {
+        // Wait a bit to make sure editor is fully initialized
+        setTimeout(() => {
           editorInstance.commands.setContent(parsedContent.content);
-        }
-
-        console.log("Loaded content:", parsedContent); // Debugging
+          console.log("Loaded content into editor");
+        }, 100);
       } catch (error) {
         console.error("Error parsing stored content:", error);
       }
@@ -60,29 +63,8 @@ export default function Home() {
       // Update the editor content with the new URLs
       updateMediaUrls(editorInstance, mediaMap);
 
-      // Store the updated content in localStorage for preview
-      const content = editorInstance.getHTML();
-      const youtubeLinks = extractYouTubeLinks(content);
-
-      localStorage.setItem(
-        "previewContent",
-        JSON.stringify({
-          title,
-          excerpt,
-          content,
-          uploadedFiles: [
-            ...res.map((file) => ({
-              ...file,
-              url: file.ufsUrl,
-            })),
-            ...youtubeLinks,
-          ],
-        })
-      );
-
-      // Navigate to the preview page
-      router.push("/preview");
-      setIsSubmitting(false);
+      // Get the content after updating URLs
+      saveAndNavigate();
     },
     onUploadError: (error) => {
       console.error("Upload error:", error);
@@ -91,6 +73,30 @@ export default function Home() {
     },
   });
 
+  const saveAndNavigate = () => {
+    if (!editorInstance) return;
+
+    // Get current editor content
+    const content = editorInstance.getHTML();
+    const youtubeLinks = extractYouTubeLinks(content);
+
+    // Save to localStorage
+    localStorage.setItem(
+      "previewContent",
+      JSON.stringify({
+        title,
+        excerpt,
+        content,
+        uploadedFiles: youtubeLinks,
+      })
+    );
+
+    // Navigate to preview
+    router.push("/preview");
+    setIsSubmitting(false);
+    editorInstance.setEditable(true);
+  };
+
   const handleSubmit = async () => {
     if (!editorInstance) {
       alert("Editor not initialized");
@@ -98,25 +104,15 @@ export default function Home() {
     }
 
     setIsSubmitting(true);
+    editorInstance.setEditable(false);
 
     try {
       // Extract local media files from the editor
       const localFiles = extractLocalMediaFiles(editorInstance);
-      const youtubeLinks = extractYouTubeLinks(editorInstance.getHTML());
 
       if (localFiles.length === 0) {
-        // No files to upload, just navigate to preview
-        const content = editorInstance.getHTML();
-        localStorage.setItem(
-          "previewContent",
-          JSON.stringify({
-            title,
-            excerpt,
-            content,
-            uploadedFiles: [...youtubeLinks],
-          })
-        );
-        router.push("/preview");
+        // No files to upload, just save and navigate
+        saveAndNavigate();
         return;
       }
 
@@ -139,6 +135,7 @@ export default function Home() {
       console.error("Error preparing files for upload:", error);
       alert("Error preparing files for upload");
       setIsSubmitting(false);
+      editorInstance.setEditable(true);
     }
   };
 

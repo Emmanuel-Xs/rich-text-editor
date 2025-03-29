@@ -1,3 +1,4 @@
+import ActionButton from "@/components/tip-tap/extensions/action-button";
 import CustomImage from "@/components/tip-tap/extensions/image";
 import Video from "@/components/tip-tap/extensions/video";
 import { cn } from "@/lib/utils";
@@ -52,9 +53,9 @@ export const useTipTapEditor = () => {
       }),
       Superscript,
       Subscript,
-      // Use our custom image extension instead of the default one
       CustomImage,
       Video,
+      ActionButton,
     ],
     editorProps: {
       attributes: {

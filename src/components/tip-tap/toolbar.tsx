@@ -1,6 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { Editor } from "@tiptap/react";
+import { ActionButton } from "./action-button";
 import { Alignment } from "./alignment";
 import { ColorPickerButton } from "./color-picker";
 import { FontFamilyDropdown } from "./font-family";
@@ -38,6 +39,7 @@ export default function TipTapToolBar({
       <HighlighterButton editor={editor} />
       <ImageButton editor={editor} />
       <VideoButton editor={editor} />
+      <ActionButton editor={editor} />
       <UndoRedo editor={editor} />
       <More editor={editor} />
     </div>

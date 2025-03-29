@@ -23,25 +23,33 @@ const VideoComponent = ({ node }: NodeViewProps) => {
   const renderVideo = () => {
     if (isYouTubeUrl(src)) {
       return (
-        <iframe
-          src={getYouTubeEmbedUrl(src)}
-          title={title || "YouTube video"}
-          width={width || "560"}
-          height={"415"}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
+        <div
+          data-type="youtube-video"
+          data-src={src}
+          className="youtube-video-container"
+        >
+          <iframe
+            src={getYouTubeEmbedUrl(src)}
+            title={title || "YouTube video"}
+            width={width || "560"}
+            height={"415"}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
       );
     } else if (isVimeoUrl(src)) {
       return (
-        <iframe
-          src={getVimeoEmbedUrl(src)}
-          title={title || "Vimeo video"}
-          width={width}
-          height={height || "315"}
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
-        ></iframe>
+        <div className="vimeo-embed-wrapper">
+          <iframe
+            src={getVimeoEmbedUrl(src)}
+            title={title || "Vimeo video"}
+            width={width}
+            height={height || "315"}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
       );
     } else {
       // Regular video file
@@ -70,6 +78,7 @@ const VideoComponent = ({ node }: NodeViewProps) => {
           isYouTubeUrl(src) ? "youtube" : isVimeoUrl(src) ? "vimeo" : "file"
         }
         data-is-local={isLocalFile ? "true" : "false"}
+        data-video-src={src}
       >
         {renderVideo()}
       </div>

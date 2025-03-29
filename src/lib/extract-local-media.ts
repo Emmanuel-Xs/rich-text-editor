@@ -1,8 +1,7 @@
-import type { Editor } from "@tiptap/react";
+import { Editor } from "@tiptap/core";
 
 interface LocalMediaFile {
   id: string;
-  type: "image" | "video";
   blobUrl: string;
   fileData: {
     name: string;
@@ -12,115 +11,137 @@ interface LocalMediaFile {
   };
 }
 
-interface NodeAttributes {
-  src: string;
-  title?: string;
-  isLocalFile?: boolean;
-  fileData?: {
-    name?: string;
-    type?: string;
-    size?: number;
-    lastModified?: number;
-  };
-}
-
-interface TiptapNode {
-  type: string;
-  attrs?: NodeAttributes;
-  content?: TiptapNode[];
+export interface YouTubeLink {
+  type: "youtube" | "vimeo";
+  url: string;
 }
 
 export function extractLocalMediaFiles(editor: Editor): LocalMediaFile[] {
   const localFiles: LocalMediaFile[] = [];
-  const json = editor.getJSON() as { content?: TiptapNode[] };
 
-  // Function to recursively search for local media files in the document
-  const findLocalMedia = (node: TiptapNode) => {
-    if (node.attrs?.isLocalFile && node.attrs.src) {
+  // Process images
+  editor.state.doc.descendants((node) => {
+    if (node.type.name === "customImage" && node.attrs.isLocalFile) {
       localFiles.push({
-        id:
-          node.attrs.title || `${node.type}-${Date.now()}-${localFiles.length}`,
-        type: node.type === "video" ? "video" : "image",
+        id: node.attrs.fileData?.name || `file-${Date.now()}`,
         blobUrl: node.attrs.src,
-        fileData: {
-          name: node.attrs.fileData?.name || "",
-          type: node.attrs.fileData?.type || "",
-          size: node.attrs.fileData?.size || 0,
-          lastModified: node.attrs.fileData?.lastModified || Date.now(),
-        },
+        fileData: node.attrs.fileData,
       });
     }
+    return true;
+  });
 
-    if (node.content) {
-      node.content.forEach(findLocalMedia);
+  // Process videos
+  editor.state.doc.descendants((node) => {
+    if (node.type.name === "video" && node.attrs.isLocalFile) {
+      localFiles.push({
+        id: node.attrs.fileData?.name || `video-${Date.now()}`,
+        blobUrl: node.attrs.src,
+        fileData: node.attrs.fileData,
+      });
     }
-  };
-
-  json.content?.forEach(findLocalMedia);
+    return true;
+  });
 
   return localFiles;
 }
 
-// Helper function to update the editor content with permanent URLs after upload
-export const updateMediaUrls = (
-  editor: Editor,
-  mediaMap: Record<string, [originalName: string, uploadedUrl: string]>
-) => {
-  const { doc, tr } = editor.state;
-  let modified = false;
+export function extractYouTubeLinks(htmlContent: string): YouTubeLink[] {
+  const youtubeLinks: YouTubeLink[] = [];
 
-  doc.descendants((node, pos) => {
-    const nodeAttrs = node.attrs as NodeAttributes | undefined;
-    if (!nodeAttrs) return;
+  // Look for data attributes in video wrappers
+  const regex = /data-video-type="(youtube|vimeo)".*?data-video-src="([^"]*)"/g;
+  let match;
 
-    if (node.type.name === "customImage" || node.type.name === "video") {
-      const { src, title } = nodeAttrs;
+  while ((match = regex.exec(htmlContent)) !== null) {
+    const type = match[1] as "youtube" | "vimeo";
+    const url = match[2];
 
-      // Find matching entry in the mediaMap
-      const matchingEntry = Object.entries(mediaMap).find(
-        ([, [originalName]]) =>
-          src.includes(originalName) || title === originalName
-      );
-
-      if (matchingEntry) {
-        const [, [, uploadedUrl]] = matchingEntry;
-
-        const newAttrs: NodeAttributes = {
-          ...nodeAttrs,
-          src: uploadedUrl,
-          isLocalFile: false,
-          fileData: {
-            name: title || nodeAttrs.fileData?.name || "",
-            type: nodeAttrs.fileData?.type || "",
-            size: nodeAttrs.fileData?.size || 0,
-            lastModified: nodeAttrs.fileData?.lastModified || Date.now(),
-          },
-        };
-
-        tr.setNodeMarkup(pos, undefined, newAttrs);
-        modified = true;
-      }
-    }
-  });
-
-  if (modified) {
-    editor.view.dispatch(tr);
+    youtubeLinks.push({
+      type,
+      url: type === "youtube" ? getYouTubeEmbedUrl(url) : getVimeoEmbedUrl(url),
+    });
   }
-};
 
-// YouTube Link Extraction
-export interface YouTubeLink {
-  type: "youtube";
-  url: string;
+  return youtubeLinks;
 }
 
-export function extractYouTubeLinks(content: string): YouTubeLink[] {
-  const regex =
-    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([\w-]{11})/g;
-  const matches = [...content.matchAll(regex)];
+export function updateMediaUrls(
+  editor: Editor,
+  mediaMap: Record<string, [string, string]>
+) {
+  // Update image URLs
+  editor.state.doc.descendants((node, pos) => {
+    if (
+      node.type.name === "customImage" &&
+      node.attrs.isLocalFile &&
+      node.attrs.fileData?.name &&
+      mediaMap[node.attrs.fileData.name]
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [originalName, newUrl] = mediaMap[node.attrs.fileData.name];
+      editor
+        .chain()
+        .setNodeSelection(pos)
+        .updateAttributes("customImage", {
+          src: newUrl,
+          isLocalFile: false,
+        })
+        .run();
+    }
+    return true;
+  });
 
-  return matches.map((match) => ({
-    type: "youtube",
-    url: `https://www.youtube.com/embed/${match[1]}`,
-  }));
+  // Update video URLs
+  editor.state.doc.descendants((node, pos) => {
+    if (
+      node.type.name === "video" &&
+      node.attrs.isLocalFile &&
+      node.attrs.fileData?.name &&
+      mediaMap[node.attrs.fileData.name]
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [originalName, newUrl] = mediaMap[node.attrs.fileData.name];
+      editor
+        .chain()
+        .setNodeSelection(pos)
+        .updateAttributes("video", {
+          src: newUrl,
+          isLocalFile: false,
+        })
+        .run();
+    }
+    return true;
+  });
+}
+
+// Helper functions to check if a URL is from YouTube or Vimeo
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function isYouTubeUrl(url: string): boolean {
+  return /youtu\.?be/i.test(url);
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function isVimeoUrl(url: string): boolean {
+  return /vimeo/i.test(url);
+}
+
+// Helper functions to get embed URLs
+function getYouTubeEmbedUrl(url: string): string {
+  const regExp =
+    /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  if (match && match[2].length === 11) {
+    return `https://www.youtube.com/embed/${match[2]}`;
+  }
+  return url;
+}
+
+function getVimeoEmbedUrl(url: string): string {
+  const regExp =
+    /vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|album\/(\d+)\/video\/|)(\d+)(?:$|\/|\?)/;
+  const match = url.match(regExp);
+  if (match && match[3]) {
+    return `https://player.vimeo.com/video/${match[3]}`;
+  }
+  return url;
 }
